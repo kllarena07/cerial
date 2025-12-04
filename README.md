@@ -18,9 +18,9 @@ A lightweight HTTP request parser built in Rust that provides structured access 
 ## 📂 General File Structure
 ```
 cerial/
-├── src/
-│   ├── cerial.rs      # Main HTTP parser implementation
-│   └── main.rs        # Example usage and testing
+└── src/
+    ├── cerial.rs      # Main HTTP parser implementation
+    └── main.rs        # Example usage and testing
 ```
 
 ## 👾 Bugs or vulnerabilities
