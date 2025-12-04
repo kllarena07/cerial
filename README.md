@@ -2,8 +2,7 @@
 
 A lightweight HTTP request parser built in Rust that provides structured access to HTTP request components.
 
-## Features
-
+Includes:
 - **Header Parsing**: Structured header storage with duplicate header support
 - **Content-Type Parsing**: Extract MIME type and parameters (charset, boundary)
 - **Cookie Parsing**: Parse cookies into name-value pairs
