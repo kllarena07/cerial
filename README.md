@@ -1,8 +1,8 @@
 # Cerial HTTP Parser
-
+## ✍ About
 A lightweight HTTP request parser built in Rust that provides structured access to HTTP request components.
 
-Includes:
+**Includes:**
 - **Header Parsing**: Structured header storage with duplicate header support
 - **Content-Type Parsing**: Extract MIME type and parameters (charset, boundary)
 - **Cookie Parsing**: Parse cookies into name-value pairs
@@ -37,6 +37,8 @@ cargo run  # Start server
 ./simple_test.sh  # Run tests
 ```
 
-## Dependencies
+## 👾 Bugs or vulnerabilities
 
-- `serde_json` - For JSON parsing support
+If you find any bugs or vulnerabilities, please contact me on my Twitter using the link below.
+
+_Made with ❤️ by [krayondev](https://x.com/krayondev)_
