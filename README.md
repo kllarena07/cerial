@@ -15,26 +15,9 @@ A lightweight HTTP request parser built in Rust that provides structured access 
 - **Chunked Transfer Encoding**: Support for chunked HTTP bodies
 - **Size Limits**: Configurable limits for headers and body
 
-## Usage
-
-```rust
-use cerial::Cerial;
-use std::net::TcpStream;
-
-let request = Cerial::parse(stream);
-println!("Method: {}", request.get_method());
-println!("Path: {}", request.get_path());
-
-if let Some(json) = request.get_json() {
-    println!("JSON: {}", json);
-}
+## 📂 General Portfolio Structure
 ```
-
-## Testing
-
-```bash
-cargo run  # Start server
-./simple_test.sh  # Run tests
+test
 ```
 
 ## 👾 Bugs or vulnerabilities
