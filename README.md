@@ -15,7 +15,7 @@ A lightweight HTTP request parser built in Rust that provides structured access 
 - **Chunked Transfer Encoding**: Support for chunked HTTP bodies
 - **Size Limits**: Configurable limits for headers and body
 
-## 📂 General Portfolio Structure
+## 📂 General File Structure
 ```
 test
 ```
