@@ -1,98 +1,33 @@
-use std::{
-    io::Write,
-    net::{TcpListener, TcpStream},
-};
+use axum::{Router, extract::Path, response::Html, routing::get};
+use pulldown_cmark::{Parser, html};
+use rust_embed::RustEmbed;
 
-use crate::cerial::Cerial;
+#[derive(RustEmbed)]
+#[folder = "pages/"] // Your folder with .md files
+struct Asset;
 
-mod cerial;
+async fn render_markdown(Path(name): Path<String>) -> Html<String> {
+    // 1. Get the file from the binary
+    let path = format!("{}/index.md", name);
+    let file = Asset::get(&path).expect("File not found");
+    let markdown_input = std::str::from_utf8(file.data.as_ref()).unwrap();
 
-fn handle_client(mut stream: TcpStream) {
-    let cerial_parser = Cerial::parse(stream.try_clone().unwrap());
+    // 2. Convert Markdown to HTML
+    let parser = Parser::new(markdown_input);
+    let mut html_output = String::new();
+    html::push_html(&mut html_output, parser);
 
-    let body_preview = if cerial_parser.get_body().len() > 100 {
-        format!("{}...", &cerial_parser.get_body()[..100])
-    } else {
-        cerial_parser.get_body().to_string()
-    };
-
-    println!(
-        "[{}, {} {}]: [{} headers], [{} bytes body]",
-        cerial_parser.get_method(),
-        cerial_parser.get_path(),
-        cerial_parser.get_version_string(),
-        cerial_parser.get_headers().len(),
-        cerial_parser.get_body().len()
-    );
-
-    // Demonstrate new header parsing features
-    if let Some(content_type) = cerial_parser.get_content_type() {
-        println!("Content-Type: {}", content_type);
-    }
-
-    if let Some(charset) = cerial_parser.get_charset() {
-        println!("Charset: {}", charset);
-    }
-
-    let cookies = cerial_parser.get_cookies();
-    if !cookies.is_empty() {
-        println!("Cookies: {:?}", cookies);
-    }
-
-    if let Some(custom_header) = cerial_parser.get_header_value("custom-header") {
-        println!("Custom-Header: {}", custom_header);
-    }
-
-    // Demonstrate form data parsing
-    if cerial_parser.is_form_data() {
-        println!("Form data detected:");
-        let form_data = cerial_parser.get_form_data();
-        for (key, value) in &form_data {
-            println!("  {}: {}", key, value);
-        }
-    }
-
-    // Demonstrate JSON parsing
-    if cerial_parser.is_json() {
-        println!("JSON data detected:");
-        if let Some(json) = cerial_parser.get_json() {
-            println!("  Parsed JSON: {}", json);
-            if let Some(name) = cerial_parser.get_json_field("name") {
-                println!("  Name field: {}", name);
-            }
-        }
-    }
-
-    // Demonstrate chunked encoding detection
-    if cerial_parser.is_chunked() {
-        println!("Chunked transfer encoding detected");
-    }
-
-    println!("Body preview: {}", body_preview);
-
-    let response =
-        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 6\r\n\r\nhello\n";
-    if let Err(e) = stream.write(response.as_bytes()) {
-        eprintln!("[ERROR]: Failed to write response: {}", e);
-    }
-    if let Err(e) = stream.flush() {
-        eprintln!("[ERROR]: Failed to flush stream: {}", e);
-    }
+    // 3. Wrap in a simple layout with some CSS
+    Html(format!(
+        "<html><body style='font-family: sans-serif; max-width: 800px; margin: auto;'>{}</body></html>",
+        html_output
+    ))
 }
 
-fn main() {
-    let ip_address = "0.0.0.0:3000";
+#[tokio::main]
+async fn main() {
+    let app = Router::new().route("/{capture}", get(render_markdown));
 
-    println!("Starting server on {ip_address}");
-    let listener = match TcpListener::bind(ip_address) {
-        Ok(listener) => listener,
-        Err(e) => panic!("[ERROR]: {}", e),
-    };
-
-    for stream in listener.incoming() {
-        match stream {
-            Ok(stream) => handle_client(stream),
-            Err(e) => eprintln!("[ERROR]: stream could not be handled. See error {e}"),
-        };
-    }
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
