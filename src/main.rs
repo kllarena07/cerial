@@ -65,7 +65,14 @@ async fn serve_file(Path(full_path): Path<String>) -> Result<Response, StatusCod
             html::push_html(&mut html_output, parser);
             let html_output = html_output.replace("/assets/", &format!("/{}/assets/", name));
             let template = TemplateAsset::get("page.html").expect("Template not found");
-            let template_str = std::str::from_utf8(&template.data).unwrap();
+            let mut template_str = std::str::from_utf8(&template.data).unwrap().to_string();
+            let custom_css_path = format!("{}/style.css", name);
+            let custom_css = if let Some(f) = Asset::get(&custom_css_path) {
+                std::str::from_utf8(&f.data).unwrap_or("").to_string()
+            } else {
+                "".to_string()
+            };
+            template_str = template_str.replace("{custom_css}", &custom_css);
             let full_html = template_str.replace("{content}", &html_output);
             Ok(Html(full_html).into_response())
         } else {
